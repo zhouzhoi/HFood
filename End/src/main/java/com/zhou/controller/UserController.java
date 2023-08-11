@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhou.common.QueryPageParam;
+import com.zhou.common.Result;
 import com.zhou.entity.User;
 import com.zhou.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,6 +104,36 @@ public class UserController {
         System.out.println("total=="+result.getTotal());
 
         return result.getRecords();
+    }
+    @PostMapping("/listPageC1")
+//    public List<User> listPage(@RequestBody HashMap map){
+    public Result listPageC1(@RequestBody QueryPageParam query){
+        HashMap param = query.getParam();
+        String name = (String)param.get("name");
+        String sex = (String)param.get("sex");
+        String roleId = (String)param.get("roleId");
+
+        Page<User> page = new Page();
+        page.setCurrent(query.getPageNum());
+        page.setSize(query.getPageSize());
+
+        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper();
+        if(StringUtils.isNotBlank(name) && !"null".equals(name)){
+            lambdaQueryWrapper.like(User::getName,name);
+        }
+        if(StringUtils.isNotBlank(sex)){
+            lambdaQueryWrapper.eq(User::getSex,sex);
+        }
+        if(StringUtils.isNotBlank(roleId)){
+            lambdaQueryWrapper.eq(User::getRoleId,roleId);
+        }
+
+        //IPage result = userService.pageC(page);
+        IPage result = userService.pageCC(page,lambdaQueryWrapper);
+
+        System.out.println("total=="+result.getTotal());
+
+        return Result.suc(result.getRecords(),result.getTotal());
     }
 
 }
