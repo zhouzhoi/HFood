@@ -2,12 +2,16 @@ package com.zhou.controller;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.zhou.common.QueryPageParam;
 import com.zhou.entity.User;
 import com.zhou.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -49,6 +53,56 @@ public class UserController {
     @GetMapping("/delete")
     public boolean saveOrMod( Integer id){
         return userService.removeById(id);
+    }
+    //分页查询
+    @PostMapping("/listPage")
+//    public List<User> listPage(@RequestBody HashMap map){
+    public List<User> listPage(@RequestBody QueryPageParam query) {
+/*
+        System.out.println("num==="+query.getPageNum());
+        System.out.println("size==="+query.getPageSize());
+*/
+
+        HashMap param = query.getParam();
+        String name = (String) param.get("name");
+        System.out.println("name==" + param.get("name"));
+//        System.out.println("no=="+param.get("no"));
+
+        Page<User> page = new Page<>();
+        page.setCurrent(query.getPageNum());
+        page.setSize(query.getPageSize());
+
+        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper();
+        lambdaQueryWrapper.like(User::getName, name);//对 User 实体类的 name 属性进行查询
+
+        IPage result = userService.page(page, lambdaQueryWrapper);
+
+        System.out.println("total==" + result.getTotal());
+        return result.getRecords();
+    }
+
+    @PostMapping("/listPageC")
+//    public List<User> listPage(@RequestBody HashMap map){
+    public List<User> listPageC(@RequestBody QueryPageParam query){
+        HashMap param = query.getParam();
+        String name = (String)param.get("name");
+        System.out.println("name==="+(String)param.get("name"));
+
+
+        Page<User> page = new Page();
+        page.setCurrent(query.getPageNum());
+        page.setSize(query.getPageSize());
+
+        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper();
+        lambdaQueryWrapper.like(User::getName,name);
+
+
+//        IPage result = userService.pageC(page);
+        IPage result = userService.pageCC(page,lambdaQueryWrapper);
+
+        System.out.println("total=="+result.getTotal());
+
+        return result.getRecords();
     }
 
 }
