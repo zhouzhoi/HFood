@@ -5,13 +5,13 @@
       <!-- 通过isCollapse传递一个值 -->
     </el-aside>
 
-    <el-container>
+    <el-container style="height: 100%;">
 <!--      <el-header style="text-align: right; font-size: 12px">-->
 <!--        <PageHeader @doCollapse="doCollapse" :icon="icon"></PageHeader>-->
 <!--        &lt;!&ndash; doCollapse是自定义调用函数&ndash;&gt;-->
 <!--      </el-header>-->
 
-      <el-header style="text-align: right; font-size: 12px;height: 100%;border-bottom: rgba(168,168,168,0.3) 1px solid;">
+      <el-header style="text-align: right; font-size: 12px;height: 100%;border-bottom: rgba(168,168,168,0.3) 1px solid;background-color: #545c64;">
         <PageHeader @doCollapse="doCollapse" :icon="icon"></PageHeader>
       </el-header>
       <el-main>
