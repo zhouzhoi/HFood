@@ -132,6 +132,7 @@ public class UserController {
         page.setSize(query.getPageSize());
 
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper();
+        //isNotBlank不为空
         if(StringUtils.isNotBlank(name) && !"null".equals(name)){
             lambdaQueryWrapper.like(User::getName,name);
         }
