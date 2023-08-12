@@ -26,14 +26,16 @@
 
 <script>
     export default {
-        name: "Login",
+        name: "LoginPage",
         data(){
             return{
+              //点击缺点后不可以再点击
                 confirm_disabled:false,
                 loginForm:{
                     no:'',
                     password:''
                 },
+              //账号密码的规则
                 rules:{
                     no: [
                         { required: true, message: '请输入账号', trigger: 'blur' }
@@ -45,7 +47,7 @@
             }
         },
         methods:{
-
+            //信息提交到后台
             confirm(){
                 this.confirm_disabled=true;
                 this.$refs.loginForm.validate((valid) => {
@@ -56,11 +58,10 @@
                             if(res.code==200){
                                 //存储
                                 sessionStorage.setItem("CurUser",JSON.stringify(res.data.user))
-
-                                console.log(res.data.menu)
-                                this.$store.commit("setMenu",res.data.menu);
+                                // console.log(res.data.menu)
+                                // this.$store.commit("setMenu",res.data.menu);
                                 //跳转到主页
-                                this.$router.replace('/Index');
+                                this.$router.replace('/HomePage');
                             }else{
                                 this.confirm_disabled=false;
                                 alert('校验失败，用户名或密码错误！');

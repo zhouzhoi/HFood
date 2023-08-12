@@ -53,6 +53,26 @@ public class UserController {
         return userService.removeById(id)?Result.suc():Result.fail();
     }
 
+    //登录
+    @PostMapping("/login")
+    public Result login(@RequestBody User user){
+        List list = userService.lambdaQuery()
+                .eq(User::getNo,user.getNo())
+                .eq(User::getPassword,user.getPassword()).list();
+        return list.size()>0?Result.suc(list.get(0)):Result.fail();
+
+
+//        if(list.size()>0){
+//            User user1 = (User)list.get(0);
+//            List menuList = menuService.lambdaQuery().like(Menu::getMenuright,user1.getRoleId()).list();
+//            HashMap res = new HashMap();
+//            res.put("user",user1);
+//            res.put("menu",menuList);
+//            return Result.suc(res);
+//        }
+//        return Result.fail();
+    }
+
     //新增
     @PostMapping("/save")
     public Result save(@RequestBody User user){

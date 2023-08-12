@@ -12,6 +12,11 @@ Vue.config.productionTip = false
 Vue.use(ElementUI);
 //全局设置输入框大小
 Vue.use(ElementUI,{size:'small'});
+//引用路由以及配置文件
+import VueRouter from 'vue-router';
+import router from './router';
+Vue.use(VueRouter);//添加use
 new Vue({
+  router,//添加
   render: h => h(App),
 }).$mount('#app')
