@@ -21,6 +21,24 @@ export default {
     return {
       tableData: Array(20).fill(item)
     }
+  },
+  methods:{
+    loadGet(){
+      //用于发送 GET 请求到指定的 URL，然后处理响应数据
+      this.$axios.get(this.$httpUrl+'/user/list').then(res=>res.data).then(res=>{
+        console.log(res)
+      })
+    },
+    loadPost(){
+      //全局地址在main.js中设置
+      this.$axios.post(this.$httpUrl+'/user/listPageC1', {}).then(res=>res.data).then(res=> {
+        console.log(res)
+      })
+    }
+  },
+  beforeMount() {
+    //this.loadGet();
+    this.loadPost()
   }
 }
 </script>

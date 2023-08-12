@@ -55,6 +55,20 @@ public class UserController {
     public boolean saveOrMod( Integer id){
         return userService.removeById(id);
     }
+
+    //查询（模糊、匹配）
+    @PostMapping("/listP")
+    public Result listP(@RequestBody User user){
+        //LambdaQueryWrapper一个查询构造器（Query Wrapper）类，用于构建复杂的数据库查询条件
+        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper();
+        //eq精确查询
+        if (StringUtils.isNotBlank(user.getName())){
+            lambdaQueryWrapper.like(User::getName,user.getName());
+        }
+
+        return Result.suc(userService.list(lambdaQueryWrapper));
+    }
+
     //分页查询
     @PostMapping("/listPage")
 //    public List<User> listPage(@RequestBody HashMap map){
