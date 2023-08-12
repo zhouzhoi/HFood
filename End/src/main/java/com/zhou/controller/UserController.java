@@ -35,10 +35,28 @@ public class UserController {
         return userService.list();
     }
 
+    //账户唯一调用
+    @GetMapping("/findByNo")
+    public Result findByNo(@RequestParam String no){
+        List list = userService.lambdaQuery().eq(User::getNo,no).list();
+        return list.size()>0?Result.suc(list):Result.fail();
+    }
+
+    //更新
+    @PostMapping("/update")
+    public Result update(@RequestBody User user){
+        return userService.updateById(user)?Result.suc():Result.fail();
+    }
+    //删除
+    @GetMapping("/del")
+    public Result del(@RequestParam String id){
+        return userService.removeById(id)?Result.suc():Result.fail();
+    }
+
     //新增
     @PostMapping("/save")
-    public boolean save(@RequestBody User user){
-        return userService.save(user);
+    public Result save(@RequestBody User user){
+        return userService.save(user)?Result.suc():Result.fail();
     }
     //修改
     @PostMapping("/mod")

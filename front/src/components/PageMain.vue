@@ -18,6 +18,7 @@
       <el-button type="warning" style="margin-left: 5px;" @click="add">新增</el-button>
     </div>
   <!--  设置表头样式-->
+<!--    设计表格-->
     <el-table :data="tableData"
               :header-cell-style="{ background: 'rgb(255,255,255)', color: '#000000' }"
               border
@@ -53,17 +54,20 @@
       </el-table-column>
       <el-table-column prop="operate" label="操作" fixed="right">
         <template slot-scope="scope">
+<!--          mod(scope.row)删除这行-->
           <el-button size="small" type="info" icon="el-icon-edit" @click="mod(scope.row)">编辑</el-button>
           <el-popconfirm
               title="确定删除吗？"
               @confirm="del(scope.row.id)"
               style="margin-left: 5px;"
           >
+<!--            @confirm="del(scope.row.id)"点击确认才触发-->
             <el-button slot="reference" size="small" type="danger" icon="el-icon-delete" >删除</el-button>
           </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
+<!--    设置分页-->
     <el-pagination
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
@@ -73,6 +77,52 @@
         layout="total, sizes, prev, pager, next, jumper"
         :total="total">
     </el-pagination>
+<!--    设置表单-->
+    <el-dialog
+        title="账户信息"
+        :visible.sync="centerDialogVisible"
+        width="30%"
+        center>
+
+      <el-form ref="form" :rules="rules" :model="form" label-width="80px">
+        <el-form-item label="账号" prop="no">
+<!--          设置输入框大小-->
+          <el-col :span="20">
+            <el-input v-model="form.no"></el-input>
+          </el-col>
+        </el-form-item>
+        <el-form-item label="名字" prop="name">
+          <el-col :span="20">
+            <el-input v-model="form.name" placeholder="名字不能超过20个字符"></el-input>
+          </el-col>
+        </el-form-item>
+        <el-form-item label="密码" prop="password">
+          <el-col :span="20">
+            <el-input v-model="form.password" show-password></el-input>
+          </el-col>
+        </el-form-item>
+        <el-form-item label="年龄" prop="age">
+          <el-col :span="20">
+            <el-input v-model="form.age"></el-input>
+          </el-col>
+        </el-form-item>
+        <el-form-item label="性别">
+          <el-radio-group v-model="form.sex">
+            <el-radio label="1">男</el-radio>
+            <el-radio label="0">女</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="电话" prop="phone">
+          <el-col :span="20">
+            <el-input v-model="form.phone"></el-input>
+          </el-col>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+    <el-button @click="centerDialogVisible = false">取 消</el-button>
+    <el-button type="primary" @click="save">确 定</el-button>
+  </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -80,7 +130,28 @@
 export default {
   name: "PageMain",
   data() {
+    //判断年龄大小
+    let checkAge = (rule, value, callback) => {
+      if(value>150){
+        callback(new Error('年龄输入过大'));
+      }else{
+        callback();
+      }
+    };
+    //检查账号是否存在过
+    let checkNoExist =(rule,value,callback)=>{
+      if(this.form.id){
+        return callback();
+      }
+      this.$axios.get(this.$httpUrl+"/user/findByNo?no="+this.form.no).then(res=>res.data).then(res=>{
+        if(res.code!=200){
 
+          callback()
+        }else{
+          callback(new Error('账号已经存在'));
+        }
+      })
+    };
     return {
       tableData: [],
       //分页数据
@@ -100,9 +171,165 @@ export default {
           label: '女'
         }
       ],
+      //初始设置为false
+      centerDialogVisible:false,
+      //表单中的相关数据
+      form:{
+        id:'',
+        no:'',
+        name:'',
+        password:'',
+        age:'',
+        phone:'',
+        sex:'0',
+        roleId:'1'
+      },
+      //通过rules写入表单的规则
+      rules: {
+        //账号需满足小于20位，同时不能重复
+        no: [
+          {required: true, message: "账号不能为空", trigger: "blur"},
+          {max: 20, message: "账号不能超过20个字符", trigger: "blur"},
+          {validator:checkNoExist,trigger: 'blur'}
+        ],
+        //年龄范围在0-150，且必须是数字
+        age: [
+          {required: true, message: '请输入年龄', trigger: 'blur'},
+          {min: 1, max: 3, message: '长度在 1 到 3 个位', trigger: 'blur'},
+          {pattern: /^([1-9][0-9]*){1,3}$/,message: '年龄必须为正整数字',trigger: "blur"},
+          {validator:checkAge,trigger: 'blur'}
+        ],
+        //密码必须大于6位，且同时包含数字和字母
+        password: [
+          { required: true, message: '密码不能为空', trigger: 'blur' },
+          { min: 6, message: '密码长度不能少于6位', trigger: 'blur' },
+          {
+            pattern: /^(?=.*[0-9])(?=.*[a-zA-Z])([a-zA-Z0-9]+)$/,
+            message: '密码必须包含数字和字母',
+            trigger: 'blur'
+          }
+        ],
+        //电话必须是11位数，且是1开头，中间是3，4，5，6，7，8，9
+        phone: [
+          { required: true, message: '电话不能为空', trigger: 'blur' },
+          {pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/, message: "请输入正确的手机号码", trigger: "blur"}
+        ]
+      }
     }
   },
   methods:{
+    //调用的是更新信息的接口
+    doMod(){
+      this.$axios.post(this.$httpUrl+'/user/update',this.form).then(res=>res.data).then(res=>{
+        console.log(res)
+        if(res.code==200){
+
+          this.$message({
+            message: '更新成功！',
+            type: 'success'
+          });
+          this.centerDialogVisible = false
+          this.loadPost()
+          this. resetForm()
+        }else{
+          this.$message({
+            message: '更新失败！',
+            type: 'error'
+          });
+        }
+
+      })
+    },
+    //删除信息
+    del(id){
+      console.log(id)
+      //res=>res.data获取数据中的data层
+      this.$axios.get(this.$httpUrl+'/user/del?id='+id).then(res=>res.data).then(res=>{
+        console.log(res)//打印这行的数据
+        if(res.code==200){
+
+          this.$message({
+            message: '删除成功！',
+            type: 'success'
+          });
+          //更新表格
+          this.loadPost()
+        }else{
+          this.$message({
+            message: '删除失败！',
+            type: 'error'
+          });
+        }
+
+      })
+    },
+    //编辑信息
+    mod(row){
+      console.log(row)
+      //打开表单框
+      this.centerDialogVisible = true
+      this.$nextTick(()=>{
+        //赋值到表单
+        this.form.id = row.id
+        this.form.no = row.no
+        this.form.name = row.name
+        this.form.password = ''
+        this.form.age = row.age +''
+        this.form.sex = row.sex +''
+        this.form.phone = row.phone
+        this.form.roleId = row.roleId
+      })
+    },
+    //重置表单
+    resetForm() {
+      this.$refs.form.resetFields();
+    },
+    doSave(){
+      this.$axios.post(this.$httpUrl+'/user/save',this.form).then(res=>res.data).then(res=>{
+        console.log(res)
+        if(res.code==200){
+
+          this.$message({
+            message: '操作成功！',
+            type: 'success'
+          });
+          this.centerDialogVisible = false
+          this.loadPost()//新增后自动刷新表单
+          this. resetForm()//新增后重置表单
+        }else{
+          this.$message({
+            message: '操作失败！',
+            type: 'error'
+          });
+        }
+
+      })
+    },
+    //保存表单信息
+    save(){
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          //如果信息id存在就是修改
+          if(this.form.id){
+            this.doMod();
+            //否则就是保存
+          }else{
+            this.doSave();
+          }
+        } else {
+          console.log('error submit!!');
+          return false;
+        }
+      });
+
+    },
+    add(){
+      this.centerDialogVisible = true//显示表单
+      //新增后下一步重置表单
+      this.$nextTick(()=>{
+        this.resetForm()
+      })
+    },
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
       this.pageNum=1//固定查询页是第一页
