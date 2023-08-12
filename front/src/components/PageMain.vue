@@ -1,5 +1,22 @@
 <template>
   <div>
+    <div style="margin-bottom: 5px;">
+<!--      @keyup.enter.native="loadPost"的意思是按下回车键运行loadPost-->
+<!--      clearable是可清空的输入框-->
+      <el-input v-model="name" placeholder="请输入名字" suffix-icon="el-icon-search" style="width: 200px;"
+                @keyup.enter.native="loadPost" clearable></el-input>
+      <el-select v-model="sex" filterable placeholder="请选择性别" style="margin-left: 5px;">
+        <el-option
+            v-for="item in sexs"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value">
+        </el-option>
+      </el-select>
+      <el-button type="info" style="margin-left: 5px;" @click="loadPost">查询</el-button>
+
+      <el-button type="warning" style="margin-left: 5px;" @click="add">新增</el-button>
+    </div>
   <!--  设置表头样式-->
     <el-table :data="tableData"
               :header-cell-style="{ background: 'rgb(255,255,255)', color: '#000000' }"
@@ -69,7 +86,20 @@ export default {
       //分页数据
       pageSize:10,
       pageNum:1,
-      total:0
+      total:0,
+      //监视namo和sex
+      name:'',
+      sex:'',
+      //设置性别搜索的下拉框内容
+      sexs:[
+        {
+          value: '1',
+          label: '男'
+        }, {
+          value: '0',
+          label: '女'
+        }
+      ],
     }
   },
   methods:{
@@ -96,7 +126,13 @@ export default {
       //listP不适用分页，将其修改为listPageC1，同时在data中添加数据
       this.$axios.post(this.$httpUrl+'/user/listPageC1', {
         pageSize:this.pageSize,
-        pageNum:this.pageNum
+        pageNum:this.pageNum,
+        //查询需要的参数
+        param:{
+          name:this.name,
+          //性别搜索的参数
+          sex:this.sex
+        }
       }).then(res=>res.data).then(res=> {
         console.log(res)
         if (res.code==200){
